@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Colorir Momentos - Custos</title>
+<meta name="theme-color" content="#2f7480">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Custos">
+<style>
+:root{--teal:#4296a2;--teal-d:#2f7480;--roxo:#8a8aba;--roxo-d:#666696;--lilas:#c6aed2;--lilas-c:#efe6f3;--creme:#faf5ef;--ink:#2b2f3a;--mut:#6b6f80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--ink);font:16px/1.4 ui-rounded,system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+[hidden]{display:none!important}
+header{background:var(--teal-d);color:#fff;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+header img{width:42px;height:42px;border-radius:50%}
+header b{font-size:18px;display:block;line-height:1.1}header span{font-size:13px;opacity:.85}
+main{padding:14px;max-width:640px;margin:auto}
+.card{background:#fff;border:1px solid var(--lilas-c);border-radius:14px;padding:14px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 10px;color:var(--teal-d)}
+label{display:block;font-size:14px;color:var(--mut);margin-bottom:10px}
+input,select,textarea{display:block;width:100%;margin-top:4px;padding:10px;border:1px solid var(--lilas);border-radius:10px;font:inherit;color:var(--ink);background:#fff}
+input[type=checkbox]{display:inline;width:auto;margin:0 8px 0 0}
+textarea{min-height:64px}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--teal-d);color:#fff;font-weight:600;cursor:pointer}
+button.ghost{background:var(--lilas-c);color:var(--roxo-d)}
+button.sec{background:var(--roxo-d)}
+button.del{background:none;color:#a33;padding:6px 8px}
+.full{width:100%}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--lilas-c)}
+.row:first-of-type{border-top:0}
+.row small{display:block;color:var(--mut);font-size:13px}
+.tag{background:var(--lilas-c);color:var(--roxo-d);font-size:12px;padding:1px 8px;border-radius:99px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chips{display:flex;gap:8px;margin:8px 0}
+.chips button{flex:1;padding:8px}
+.prod{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--lilas-c);cursor:pointer}
+.prod:first-of-type{border-top:0}
+.ph{width:56px;height:56px;border-radius:12px;background:var(--lilas-c);object-fit:cover;display:grid;place-items:center;font-size:24px;flex:none}
+.foto{width:100%;height:180px;border-radius:12px;background:var(--lilas-c);object-fit:cover;display:grid;place-items:center;color:var(--roxo-d);margin-bottom:10px}
+.ln{display:flex;justify-content:space-between;padding:3px 0}
+.big{background:var(--teal-d);color:#fff;border-radius:12px;padding:12px;margin:10px 0;text-align:center}
+.big b{display:block;font-size:28px}
+.mat{display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end;margin-bottom:8px}
+.mat label{margin:0}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--lilas);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:12px 4px;font-size:13px}
+nav button.on{color:var(--teal-d);box-shadow:inset 0 3px 0 var(--teal)}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+.mut{color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+<header><img src="icon-192.png" alt=""><div><b>Colorir Momentos</b><span>Custos</span></div></header>
+<main id="v"></main>
+<nav>
+<button data-t="estoque">Estoque</button><button data-t="prod">Produtos</button><button data-t="perda">Perdas</button><button data-t="aj">Ajustes</button>
+</nav>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const brl=n=>(+n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmt=n=>(+n||0).toLocaleString('pt-BR',{maximumFractionDigits:4});
+const num=v=>parseFloat(String(v).trim().replace(',','.'))||0;
+const inp=n=>String(n).replace('.',',');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const UN=['unidade(s)','folha(s)','metro(s)','cm','grama(s)','ml'];
+const MOT=['Teste','Erro','Quebrou','Outros'];
+let S={cfg:{hora:7.37,tinta:15,margem:50},itens:[],lotes:[],prods:[],perdas:[],prod:[]};
+let tab='estoque',ed=null,qn=1,pre=null;
+
+/* armazenamento (IndexedDB) */
+const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('cm-custos',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+async function load(){const d=await idb();return new Promise(ok=>{const q=d.transaction('k').objectStore('k').get('s');q.onsuccess=()=>ok(q.result);q.onerror=()=>ok()})}
+async function save(){try{const d=await idb();d.transaction('k','readwrite').objectStore('k').put(S,'s')}catch(e){toast('Não foi possível salvar neste aparelho')}}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)}
+
+/* regras de estoque e custo */
+const item=id=>S.itens.find(i=>i.id==id);
+const estoque=id=>S.lotes.filter(l=>l.item==id).reduce((a,l)=>a+l.rest,0);
+function valorUn(id){const ls=S.lotes.filter(l=>l.item==id),v=ls.filter(l=>l.rest>1e-9),b=v.length?v:ls.slice(-1);return Math.max(0,...b.map(l=>l.total/l.qtd))}
+function baixa(id,q){let f=q,val=0;for(const l of S.lotes.filter(l=>l.item==id&&l.rest>1e-9)){const t=Math.min(l.rest,f);l.rest-=t;f-=t;val+=t*l.total/l.qtd;if(f<=1e-9)break}return val}
+function calc(p){let mat=0,fol=0;for(const m of p.mats){const c=m.qtd*valorUn(m.item);mat+=c;if(item(m.item)?.folha)fol+=c}
+const tinta=fol*p.tinta/100,mdo=p.tempo/60*p.hora,custo=mat+tinta+mdo,preco=custo*(1+p.margem/100);return{mat,tinta,mdo,custo,preco,lucro:preco-custo}}
+
+/* telas */
+const itemOpts=sel=>S.itens.map(i=>`<option value="${i.id}"${i.id==sel?' selected':''}>${esc(i.nome)} (${i.un})</option>`).join('');
+function vEstoque(){return `<section class="card"><h2>Entrada de produto</h2>
+<label>Item<select id="e_item">${itemOpts()}<option value="new"${S.itens.length?'':' selected'}>+ Novo item…</option></select></label>
+<div id="e_new"${S.itens.length?' hidden':''}><label>Nome do item<input id="e_nome" placeholder="Ex.: papel foto"></label>
+<label>Unidade de medida<select id="e_un">${UN.map(u=>`<option>${u}</option>`).join('')}</select></label>
+<label><input type="checkbox" id="e_folha">É folha (a tinta é calculada sobre ela)</label></div>
+<div class="two"><label>Quantidade comprada<input id="e_q" inputmode="decimal" placeholder="20"></label>
+<label>Valor pago (total)<input id="e_v" inputmode="decimal" placeholder="5,49"></label></div>
+<button class="full" data-a="entrada">Dar entrada</button></section>
+<section class="card"><h2>Itens em estoque</h2>${S.itens.length?S.itens.map(i=>`<div class="row"><div><b>${esc(i.nome)}</b>${i.folha?' <span class="tag">folha</span>':''}<small>${fmt(estoque(i.id))} ${i.un} · ${brl(valorUn(i.id))} cada</small></div><button class="ghost" data-a="perdaDe" data-id="${i.id}">Perda</button></div>`).join(''):'<p class="mut">Nada por aqui ainda. Dê entrada no primeiro item acima.</p>'}</section>`}
+
+function vProd(){if(ed)return vEd();return `<button class="full" data-a="novo" style="margin-bottom:14px">+ Novo produto</button><section class="card"><h2>Produtos cadastrados</h2>${S.prods.length?S.prods.map(p=>{const n=S.prod.filter(x=>x.prodId==p.id).reduce((a,x)=>a+x.n,0);return `<div class="prod" data-a="abrir" data-id="${p.id}">${p.foto?`<img class="ph" src="${p.foto}" alt="">`:'<div class="ph">🎨</div>'}<div><b>${esc(p.nome)}</b><small class="mut" style="display:block">${brl(calc(p).preco)} por unidade${n?` · ${n} produzidas`:''}</small></div></div>`}).join(''):'<p class="mut">Nenhum produto ainda. Toque em "Novo produto" para cadastrar o primeiro.</p>'}</section>`}
+
+function vEd(){const f=(k,l,u)=>`<label>${l}<input data-f="${k}" inputmode="decimal" value="${inp(ed[k])}"></label>`;
+return `<section class="card"><h2>${ed.id?'Editar produto':'Novo produto'}</h2>
+${ed.foto?`<img class="foto" src="${ed.foto}" alt="">`:'<div class="foto">Sem foto</div>'}
+<label class="full"><span class="ghost" style="display:block;text-align:center;padding:11px;border-radius:10px;font-weight:600;color:var(--roxo-d);background:var(--lilas-c)">📷 Tirar ou escolher foto</span><input type="file" id="foto" accept="image/*" hidden></label>
+<label>Nome do produto<input data-f="nome" value="${esc(ed.nome)}" placeholder="Ex.: Convite de casamento"></label>
+<label>Tempo para fazer 1 unidade (minutos)<input data-f="tempo" inputmode="decimal" value="${inp(ed.tempo)}"></label>
+<div class="three">${f('hora','Valor da hora (R$)')}${f('tinta','Tinta (%)')}${f('margem','Margem (%)')}</div></section>
+<section class="card"><h2>Materiais usados em 1 unidade</h2>${S.itens.length?'':'<p class="mut">Cadastre os itens na aba Estoque antes.</p>'}
+${ed.mats.map((m,i)=>`<div class="mat"><label>Item<select data-i="${i}" data-k="item">${itemOpts(m.item)}</select></label><label>Qtd.<input data-i="${i}" data-k="qtd" inputmode="decimal" value="${inp(m.qtd)}"></label><button class="del" data-a="rmMat" data-i="${i}">✕</button></div>`).join('')}
+${S.itens.length?'<button class="ghost full" data-a="addMat">+ Adicionar material</button>':''}</section>
+<section class="card"><h2>Preço</h2><div id="res"></div>
+<label style="margin-top:12px">Quantidade da encomenda<input id="n" inputmode="numeric" value="${qn}"></label>
+<div class="chips">${[1,10,30,50,100].map(n=>`<button class="ghost" data-a="qn" data-n="${n}">${n}</button>`).join('')}</div><div id="resn"></div>
+<button class="sec full" data-a="produzir" style="margin-top:12px">Registrar produção (baixar estoque)</button></section>
+<button class="full" data-a="salvar">Salvar produto</button>
+<div class="two" style="margin-top:10px"><button class="ghost" data-a="voltar">Voltar</button>${ed.id?'<button class="del" data-a="excluir">Excluir produto</button>':''}</div>`}
+
+function calcRes(){const el=$('#res');if(!el)return;const c=calc(ed),L=(a,b)=>`<div class="ln"><span>${a}</span><span>${brl(b)}</span></div>`;
+const sem=ed.mats.some(m=>valorUn(m.item)==0);
+el.innerHTML=L('Materiais',c.mat)+L(`Tinta (${fmt(ed.tinta)}% das folhas)`,c.tinta)+L('Mão de obra',c.mdo)+`<div class="ln"><b>Custo por unidade</b><b>${brl(c.custo)}</b></div>
+<div class="big">Preço por unidade<b>${brl(c.preco)}</b><span>Lucro ${brl(c.lucro)} (${c.preco?fmt(c.lucro/c.preco*100):0}% do preço de venda)</span></div>${sem?'<p class="mut">Algum material ainda não tem compra registrada, então o custo dele está zerado.</p>':''}`;
+$('#resn').innerHTML=`<div class="ln"><span>Custo de ${qn} un.</span><span>${brl(c.custo*qn)}</span></div><div class="ln"><b>Total a cobrar (${qn} un.)</b><b>${brl(c.preco*qn)}</b></div><div class="ln"><span>Lucro</span><span>${brl(c.lucro*qn)}</span></div>`}
+
+function vPerda(){const tot=S.perdas.reduce((a,p)=>a+p.valor,0),por={},pi={};
+S.perdas.forEach(p=>{(por[p.motivo]??=0);por[p.motivo]+=p.valor;(pi[p.item]??={q:0,v:0});pi[p.item].q+=p.qtd;pi[p.item].v+=p.valor});
+return `<section class="card"><h2>Registrar perda</h2>${S.itens.length?`<label>Item<select id="p_item">${itemOpts(pre)}</select></label>
+<div class="two"><label>Quantidade perdida<input id="p_q" inputmode="decimal"></label><label>Motivo<select id="p_m">${MOT.map(m=>`<option>${m}</option>`).join('')}</select></label></div>
+<label>Justificativa (obrigatória em "Outros")<textarea id="p_j"></textarea></label><button class="full" data-a="perda">Baixar do estoque</button>`:'<p class="mut">Cadastre itens na aba Estoque primeiro.</p>'}</section>
+<section class="card"><h2>Relatório de perdas</h2><div class="big">Total perdido<b>${brl(tot)}</b></div>
+${Object.keys(pi).length?`<p class="mut" style="margin-bottom:4px">Por item</p>${Object.entries(pi).map(([id,x])=>`<div class="ln"><span>${esc(item(id)?.nome)}: ${fmt(x.q)} ${item(id)?.un}</span><span>${brl(x.v)}</span></div>`).join('')}
+<p class="mut" style="margin:12px 0 4px">Por motivo</p>${Object.entries(por).map(([m,v])=>`<div class="ln"><span>${m}</span><span>${brl(v)}</span></div>`).join('')}
+<p class="mut" style="margin:12px 0 0">Últimas perdas</p>${S.perdas.slice(-15).reverse().map(p=>`<div class="row"><div>${esc(item(p.item)?.nome)} · ${fmt(p.qtd)} ${item(p.item)?.un}<small>${new Date(p.data).toLocaleDateString('pt-BR')} · ${p.motivo}${p.just?': '+esc(p.just):''}</small></div><b>${brl(p.valor)}</b></div>`).join('')}`:'<p class="mut">Nenhuma perda registrada.</p>'}</section>`}
+
+function vAj(){const c=(k,l)=>`<label>${l}<input data-c="${k}" inputmode="decimal" value="${inp(S.cfg[k])}"></label>`;
+return `<section class="card"><h2>Valores padrão</h2><p class="mut">Valem para produtos novos. Em cada produto você pode mudar.</p>${c('hora','Valor da hora de trabalho (R$)')}${c('tinta','Tinta (% do valor das folhas)')}${c('margem','Margem de lucro (% sobre o custo)')}</section>
+<section class="card"><h2>Backup</h2><p class="mut">Os dados ficam só neste aparelho. Exporte um backup de vez em quando e guarde o arquivo.</p>
+<button class="full" data-a="exp">Exportar backup</button><label style="margin-top:10px"><span class="ghost" style="display:block;text-align:center;padding:11px;border-radius:10px;font-weight:600;color:var(--roxo-d);background:var(--lilas-c)">Importar backup</span><input type="file" id="imp" accept=".json,application/json" hidden></label></section>`}
+
+function render(){$('#v').innerHTML=({estoque:vEstoque,prod:vProd,perda:vPerda,aj:vAj})[tab]();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));if(tab=='prod'&&ed)calcRes();window.scrollTo(0,0)}
+
+/* ações */
+const A={
+entrada(){let id=$('#e_item').value;const q=num($('#e_q').value),v=num($('#e_v').value);
+if(q<=0||v<=0)return toast('Informe a quantidade e o valor pago');
+if(id=='new'){const nome=$('#e_nome').value.trim();if(!nome)return toast('Digite o nome do item');id=uid();S.itens.push({id,nome,un:$('#e_un').value,folha:$('#e_folha').checked})}
+S.lotes.push({id:uid(),item:id,qtd:q,rest:q,total:v,data:Date.now()});save();render();toast('Entrada registrada')},
+perdaDe(b){pre=b.dataset.id;tab='perda';render()},
+perda(){const id=$('#p_item').value,q=num($('#p_q').value),m=$('#p_m').value,j=$('#p_j').value.trim();
+if(q<=0)return toast('Informe a quantidade perdida');if(q>estoque(id)+1e-9)return toast('Só há '+fmt(estoque(id))+' em estoque');
+if(m=='Outros'&&!j)return toast('Explique o motivo em "Outros"');
+const valor=baixa(id,q);S.perdas.push({id:uid(),item:id,qtd:q,motivo:m,just:j,valor,data:Date.now()});save();pre=null;render();toast('Perda registrada')},
+novo(){ed={nome:'',foto:'',tempo:0,hora:S.cfg.hora,tinta:S.cfg.tinta,margem:S.cfg.margem,mats:[]};qn=1;render()},
+abrir(b){ed=JSON.parse(JSON.stringify(S.prods.find(p=>p.id==b.dataset.id)));qn=1;render()},
+voltar(){ed=null;render()},
+addMat(){ed.mats.push({item:S.itens[0].id,qtd:1});render()},
+rmMat(b){ed.mats.splice(+b.dataset.i,1);render()},
+qn(b){qn=+b.dataset.n;$('#n').value=qn;calcRes()},
+salvar(){if(!ed.nome.trim())return toast('Dê um nome ao produto');ed.mats=ed.mats.filter(m=>m.qtd>0);
+if(ed.id){S.prods[S.prods.findIndex(p=>p.id==ed.id)]=ed}else{ed.id=uid();S.prods.push(ed)}save();ed=null;render();toast('Produto salvo')},
+excluir(){if(confirm('Excluir este produto?')){S.prods=S.prods.filter(p=>p.id!=ed.id);save();ed=null;render()}},
+produzir(){const need={};ed.mats.forEach(m=>need[m.item]=(need[m.item]||0)+m.qtd*qn);
+const falta=Object.keys(need).filter(id=>need[id]>estoque(id)+1e-9);
+if(!Object.keys(need).length)return toast('Adicione os materiais primeiro');
+if(falta.length)return alert('Estoque insuficiente para '+qn+' unidade(s):\n'+falta.map(id=>`${item(id).nome}: precisa de ${fmt(need[id])}, tem ${fmt(estoque(id))}`).join('\n'));
+if(!confirm('Registrar a produção de '+qn+' unidade(s) e baixar o estoque?'))return;
+const c=calc(ed);Object.keys(need).forEach(id=>baixa(id,need[id]));
+S.prod.push({id:uid(),prodId:ed.id||null,nome:ed.nome,n:qn,custo:c.custo*qn,data:Date.now()});save();render();toast('Produção registrada e estoque atualizado')},
+exp(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='colorir-momentos-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
+};
+$('#v').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)A[b.dataset.a](b)});
+$('#v').addEventListener('input',e=>{const t=e.target;
+if(t.dataset.f&&ed){ed[t.dataset.f]=t.dataset.f=='nome'?t.value:num(t.value);calcRes()}
+else if(t.dataset.k&&ed){ed.mats[+t.dataset.i][t.dataset.k]=t.dataset.k=='qtd'?num(t.value):t.value;calcRes()}
+else if(t.id=='n'&&ed){qn=Math.max(1,Math.floor(num(t.value)));calcRes()}});
+$('#v').addEventListener('change',e=>{const t=e.target;
+if(t.id=='e_item')$('#e_new').hidden=t.value!='new';
+if(t.dataset.c){S.cfg[t.dataset.c]=num(t.value);save();toast('Valor padrão salvo')}
+if(t.id=='foto'&&t.files[0]){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);ed.foto=c.toDataURL('image/jpeg',.75);render()};im.src=r.result};r.readAsDataURL(t.files[0])}
+if(t.id=='imp'&&t.files[0]){t.files[0].text().then(x=>{try{const d=JSON.parse(x);if(!d.itens||!d.lotes)throw 0;if(confirm('Substituir os dados deste aparelho pelo backup?')){S=Object.assign({cfg:S.cfg,itens:[],lotes:[],prods:[],perdas:[],prod:[]},d);save();render();toast('Backup importado')}}catch(_){toast('Arquivo de backup inválido')}})}});
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;ed=null;render()}});
+(async()=>{const d=await load().catch(()=>0);if(d)S=Object.assign(S,d);navigator.storage?.persist?.();render();if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{})})();
+</script>
+</body>
+</html>
