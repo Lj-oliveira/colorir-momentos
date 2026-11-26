@@ -47,20 +47,59 @@ button.del{background:none;color:#a33;padding:6px 8px}
 .mat{display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end;margin-bottom:8px}
 .mat label{margin:0}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--lilas);padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:12px 4px;font-size:13px}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:12px 2px;font-size:12px}
 nav button.on{color:var(--teal-d);box-shadow:inset 0 3px 0 var(--teal)}
 #toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.on{opacity:1}
 .mut{color:var(--mut);font-size:14px}
+.pick{display:block;text-align:center;padding:11px;border-radius:10px;font-weight:600;color:var(--roxo-d);background:var(--lilas-c);cursor:pointer}
+.itm{padding:10px 0;border-top:1px solid var(--lilas-c)}
+.itm:first-of-type{border-top:0}
+.itm small{display:block;color:var(--mut);font-size:13px}
+.top{display:flex;gap:12px;align-items:center}
+.acts{display:flex;gap:8px;margin-top:8px}
+.acts button{flex:1;padding:8px}
+.qrow{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.qrow label{margin:0;display:flex;align-items:center;gap:8px}
+.qrow input{width:84px;margin:0}
+.mat2{display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:8px}
+.mat2 label{margin:0}
+#doc{display:none;position:fixed;inset:0;z-index:50;background:#e9e4ee;overflow:auto;-webkit-overflow-scrolling:touch}
+#doc.on{display:block}
+#bar{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;background:#fff;border-bottom:1px solid var(--lilas)}
+.pg{width:calc(100% - 24px);max-width:210mm;margin:12px auto;background:#fff;padding:22px 18px;display:flex;flex-direction:column;font-size:13px;color:var(--ink);box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.dh{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.dh img{width:84px;height:84px;border-radius:12px;flex:none}
+.dt{line-height:1.1;white-space:nowrap}
+.dt .sc{font:italic 40px/1 "Brush Script MT","Segoe Script","Snell Roundhand","Lucida Handwriting",cursive;color:#2f7480}
+.dt .mm{font-weight:700;font-size:17px;letter-spacing:.32em;color:#666696;margin-left:6px}
+.dsub{font-style:italic;color:#666696;margin-top:6px}
+.faixa{height:8px;background:#4296a2}
+.pg h1{text-align:center;font-size:24px;font-weight:800;letter-spacing:.08em;margin:22px 0 14px;color:var(--ink)}
+.pg table{width:100%;border-collapse:collapse}
+.pg th{background:#efe6f3;color:#666696;padding:8px 6px;text-align:center;font-size:1em}
+.pg td{padding:8px 6px;text-align:center;vertical-align:middle;border-bottom:1px solid #efe6f3}
+.pg tr{break-inside:avoid}
+.pf{width:56px;height:56px;object-fit:cover;border-radius:6px;background:#efe6f3;display:grid;place-items:center;font-size:24px;margin:auto}
+.ptot{background:#efe6f3;text-align:right;font-weight:800;font-size:1.25em;padding:10px 12px;color:#666696}
+.obg{text-align:center;font-weight:800;color:#666696;font-size:1.15em;margin-top:30px}
+.bot{margin-top:auto;padding-top:56px;display:flex;justify-content:space-between;align-items:flex-end;gap:28px}
+.bot .cl{flex:1;border-bottom:1px solid #666696;padding-bottom:4px}
+.bot .dtx{padding-bottom:5px;white-space:nowrap}
+@page{size:A4;margin:0}
+@media print{body>*:not(#doc){display:none!important}body{background:#fff;padding:0}#doc.on{position:static;overflow:visible;background:#fff}#bar{display:none}
+.pg{width:210mm;max-width:none;min-height:296mm;margin:0;padding:14mm;box-shadow:none;font-size:15px}.pf{width:64px;height:64px}.dh img{width:96px;height:96px}.dt .sc{font-size:48px}.dt .mm{font-size:20px}
+#doc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
 <header><img src="icon-192.png" alt=""><div><b>Colorir Momentos</b><span>Custos</span></div></header>
 <main id="v"></main>
 <nav>
-<button data-t="estoque">Estoque</button><button data-t="prod">Produtos</button><button data-t="perda">Perdas</button><button data-t="aj">Ajustes</button>
+<button data-t="estoque">Estoque</button><button data-t="prod">Produtos</button><button data-t="perda">Perdas</button><button data-t="orc">Orçamento</button><button data-t="aj">Ajustes</button>
 </nav>
 <div id="toast"></div>
+<div id="doc"></div>
 <script>
 const $=s=>document.querySelector(s);
 const brl=n=>(+n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -71,8 +110,9 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const uid=()=>Math.random().toString(36).slice(2,9);
 const UN=['unidade(s)','folha(s)','metro(s)','cm','grama(s)','ml'];
 const MOT=['Teste','Erro','Quebrou','Outros'];
-let S={cfg:{hora:7.37,tinta:15,margem:50},itens:[],lotes:[],prods:[],perdas:[],prod:[]};
-let tab='estoque',ed=null,qn=1,pre=null;
+let S={cfg:{hora:7.37,tinta:15,margem:50},itens:[],lotes:[],prods:[],perdas:[],prod:[],cesta:{itens:[],cliente:''}};
+function hoje(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()}
+let tab='estoque',ed=null,qn=1,pre=null,ei=null,ep=null,nf='',odata=hoje();
 
 /* armazenamento (IndexedDB) */
 const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('cm-custos',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
@@ -84,23 +124,45 @@ let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on
 const item=id=>S.itens.find(i=>i.id==id);
 const estoque=id=>S.lotes.filter(l=>l.item==id).reduce((a,l)=>a+l.rest,0);
 function valorUn(id){const ls=S.lotes.filter(l=>l.item==id),v=ls.filter(l=>l.rest>1e-9),b=v.length?v:ls.slice(-1);return Math.max(0,...b.map(l=>l.total/l.qtd))}
-function baixa(id,q){let f=q,val=0;for(const l of S.lotes.filter(l=>l.item==id&&l.rest>1e-9)){const t=Math.min(l.rest,f);l.rest-=t;f-=t;val+=t*l.total/l.qtd;if(f<=1e-9)break}return val}
+function baixa(id,q,reg){let f=q,val=0;for(const l of S.lotes.filter(l=>l.item==id&&l.rest>1e-9)){const t=Math.min(l.rest,f);l.rest-=t;f-=t;val+=t*l.total/l.qtd;reg?.push({l:l.id,q:t});if(f<=1e-9)break}return val}
+function devolve(o){if(!item(o.item))return;let f=o.qtd;
+for(const x of o.lt||[]){const l=S.lotes.find(l=>l.id==x.l);if(l){const t=Math.min(x.q,f);l.rest+=t;f-=t}}
+if(!o.lt){for(const l of S.lotes.filter(l=>l.item==o.item).reverse()){const t=Math.min(l.qtd-l.rest,f);if(t>0){l.rest+=t;f-=t}if(f<=1e-9)break}}
+if(f>1e-9)S.lotes.push({id:uid(),item:o.item,qtd:f,rest:f,total:o.qtd?o.valor*f/o.qtd:0,data:Date.now()})}
+const resize=(file,cb)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.75))};im.onerror=()=>toast('Não foi possível ler a imagem');im.src=r.result};r.readAsDataURL(file)};
+const thumb=(f,ic)=>f?`<img class="ph" src="${f}" alt="">`:`<div class="ph">${ic}</div>`;
+const cestaL=()=>S.cesta.itens.map(c=>{const p=S.prods.find(p=>p.id==c.id);if(!p)return null;const u=Math.round(calc(p).preco*100)/100;return{p,id:c.id,q:c.q,u,sub:Math.round(u*c.q*100)/100}}).filter(Boolean);
+const cTotal=()=>cestaL().reduce((a,x)=>a+x.sub,0);
 function calc(p){let mat=0,fol=0;for(const m of p.mats){const c=m.qtd*valorUn(m.item);mat+=c;if(item(m.item)?.folha)fol+=c}
-const tinta=fol*p.tinta/100,mdo=p.tempo/60*p.hora,custo=mat+tinta+mdo,preco=custo*(1+p.margem/100);return{mat,tinta,mdo,custo,preco,lucro:preco-custo}}
+const tinta=fol*p.tinta/100,mdo=p.tempo/60*p.hora;let custo=mat+tinta+mdo;if(custo>0&&custo<0.01)custo=0.01;const preco=custo*(1+p.margem/100);return{mat,tinta,mdo,custo,preco,lucro:preco-custo}}
 
 /* telas */
 const itemOpts=sel=>S.itens.map(i=>`<option value="${i.id}"${i.id==sel?' selected':''}>${esc(i.nome)} (${i.un})</option>`).join('');
-function vEstoque(){return `<section class="card"><h2>Entrada de produto</h2>
+function vEstoque(){if(ei)return vEdItem();
+const tv=S.lotes.reduce((a,l)=>a+(l.rest>0?l.rest*l.total/l.qtd:0),0),n=S.itens.length;
+return `<div class="big" style="margin-top:0">Valor total do estoque<b>${brl(tv)}</b><span>${n} ${n==1?'item':'itens'}</span></div>
+<section class="card"><h2>Entrada de estoque</h2>
 <label>Item<select id="e_item">${itemOpts()}<option value="new"${S.itens.length?'':' selected'}>+ Novo item…</option></select></label>
 <div id="e_new"${S.itens.length?' hidden':''}><label>Nome do item<input id="e_nome" placeholder="Ex.: papel foto"></label>
 <label>Unidade de medida<select id="e_un">${UN.map(u=>`<option>${u}</option>`).join('')}</select></label>
+<div class="top" style="margin-bottom:10px"><div id="nprev">${thumb(nf,'📦')}</div><label style="flex:1;margin:0"><span class="pick">📷 Foto do item (opcional)</span><input type="file" id="nfoto" accept="image/*" hidden></label></div>
 <label><input type="checkbox" id="e_folha">É folha (a tinta é calculada sobre ela)</label></div>
 <div class="two"><label>Quantidade comprada<input id="e_q" inputmode="decimal" placeholder="20"></label>
 <label>Valor pago (total)<input id="e_v" inputmode="decimal" placeholder="5,49"></label></div>
 <button class="full" data-a="entrada">Dar entrada</button></section>
-<section class="card"><h2>Itens em estoque</h2>${S.itens.length?S.itens.map(i=>`<div class="row"><div><b>${esc(i.nome)}</b>${i.folha?' <span class="tag">folha</span>':''}<small>${fmt(estoque(i.id))} ${i.un} · ${brl(valorUn(i.id))} cada</small></div><button class="ghost" data-a="perdaDe" data-id="${i.id}">Perda</button></div>`).join(''):'<p class="mut">Nada por aqui ainda. Dê entrada no primeiro item acima.</p>'}</section>`}
+<section class="card"><h2>Itens em estoque</h2>${S.itens.length?S.itens.map(i=>`<div class="itm"><div class="top">${thumb(i.foto,'📦')}<div><b>${esc(i.nome)}</b>${i.folha?' <span class="tag">folha</span>':''}<small>${fmt(estoque(i.id))} ${i.un} · ${brl(valorUn(i.id))} cada</small></div></div>
+<div class="acts"><button class="ghost" data-a="perdaDe" data-id="${i.id}">Perda</button><button class="ghost" data-a="editI" data-id="${i.id}">Editar</button><button class="del" data-a="excluirI" data-id="${i.id}">Excluir</button></div></div>`).join(''):'<p class="mut">Nada por aqui ainda. Dê entrada no primeiro item acima.</p>'}</section>`}
 
-function vProd(){if(ed)return vEd();return `<button class="full" data-a="novo" style="margin-bottom:14px">+ Novo produto</button><section class="card"><h2>Produtos cadastrados</h2>${S.prods.length?S.prods.map(p=>{const n=S.prod.filter(x=>x.prodId==p.id).reduce((a,x)=>a+x.n,0);return `<div class="prod" data-a="abrir" data-id="${p.id}">${p.foto?`<img class="ph" src="${p.foto}" alt="">`:'<div class="ph">🎨</div>'}<div><b>${esc(p.nome)}</b><small class="mut" style="display:block">${brl(calc(p).preco)} por unidade${n?` · ${n} produzidas`:''}</small></div></div>`}).join(''):'<p class="mut">Nenhum produto ainda. Toque em "Novo produto" para cadastrar o primeiro.</p>'}</section>`}
+function vEdItem(){const us=UN.includes(ei.un)?UN:[ei.un,...UN];
+return `<section class="card"><h2>Editar item</h2>
+${ei.foto?`<img class="foto" src="${ei.foto}" alt="">`:'<div class="foto">Sem foto</div>'}
+<div class="two" style="margin-bottom:10px"><label style="margin:0"><span class="pick">📷 ${ei.foto?'Trocar foto':'Adicionar foto'}</span><input type="file" id="ifoto" accept="image/*" hidden></label>${ei.foto?'<button class="ghost" data-a="rmFotoI">Remover foto</button>':'<span></span>'}</div>
+<label>Nome do item<input data-g="nome" value="${esc(ei.nome)}"></label>
+<label>Unidade de medida<select data-g="un">${us.map(u=>`<option${u==ei.un?' selected':''}>${esc(u)}</option>`).join('')}</select></label>
+<label><input type="checkbox" data-g="folha"${ei.folha?' checked':''}>É folha (a tinta é calculada sobre ela)</label>
+<button class="full" data-a="salvarI">Salvar alterações</button><button class="ghost full" data-a="cancI" style="margin-top:8px">Cancelar</button></section>`}
+
+function vProd(){if(ed)return vEd();return `<button class="full" data-a="novo" style="margin-bottom:14px">+ Novo produto</button><section class="card"><h2>Meus produtos</h2>${S.prods.length?S.prods.map(p=>{const n=S.prod.filter(x=>x.prodId==p.id).reduce((a,x)=>a+x.n,0);return `<div class="prod" data-a="abrir" data-id="${p.id}">${p.foto?`<img class="ph" src="${p.foto}" alt="">`:'<div class="ph">🎨</div>'}<div><b>${esc(p.nome)}</b><small class="mut" style="display:block">${brl(calc(p).preco)} por unidade${n?` · ${n} produzidas`:''}</small></div></div>`}).join(''):'<p class="mut">Nenhum produto ainda. Toque em "Novo produto" para cadastrar o primeiro.</p>'}</section>`}
 
 function vEd(){const f=(k,l,u)=>`<label>${l}<input data-f="${k}" inputmode="decimal" value="${inp(ed[k])}"></label>`;
 return `<section class="card"><h2>${ed.id?'Editar produto':'Novo produto'}</h2>
@@ -114,54 +176,90 @@ ${ed.mats.map((m,i)=>`<div class="mat"><label>Item<select data-i="${i}" data-k="
 ${S.itens.length?'<button class="ghost full" data-a="addMat">+ Adicionar material</button>':''}</section>
 <section class="card"><h2>Preço</h2><div id="res"></div>
 <label style="margin-top:12px">Quantidade da encomenda<input id="n" inputmode="numeric" value="${qn}"></label>
-<div class="chips">${[1,10,30,50,100].map(n=>`<button class="ghost" data-a="qn" data-n="${n}">${n}</button>`).join('')}</div><div id="resn"></div>
-<button class="sec full" data-a="produzir" style="margin-top:12px">Registrar produção (baixar estoque)</button></section>
+<div class="chips">${[1,10,30,50,100].map(n=>`<button class="ghost" data-a="qn" data-n="${n}">${n}</button>`).join('')}</div><div id="resn"></div><div class="big" id="resb"></div>
+<button class="sec full" data-a="produzir">Registrar produção (baixar estoque)</button></section>
 <button class="full" data-a="salvar">Salvar produto</button>
 <div class="two" style="margin-top:10px"><button class="ghost" data-a="voltar">Voltar</button>${ed.id?'<button class="del" data-a="excluir">Excluir produto</button>':''}</div>`}
 
-function calcRes(){const el=$('#res');if(!el)return;const c=calc(ed),L=(a,b)=>`<div class="ln"><span>${a}</span><span>${brl(b)}</span></div>`;
+function calcRes(){const el=$('#res');if(!el)return;const c=calc(ed),L=(a,b)=>`<div class="ln"><span>${a}</span><span>${brl(b)}</span></div>`,B=(a,b)=>`<div class="ln"><b>${a}</b><b>${brl(b)}</b></div>`;
 const sem=ed.mats.some(m=>valorUn(m.item)==0);
-el.innerHTML=L('Materiais',c.mat)+L(`Tinta (${fmt(ed.tinta)}% das folhas)`,c.tinta)+L('Mão de obra',c.mdo)+`<div class="ln"><b>Custo por unidade</b><b>${brl(c.custo)}</b></div>
-<div class="big">Preço por unidade<b>${brl(c.preco)}</b><span>Lucro ${brl(c.lucro)} (${c.preco?fmt(c.lucro/c.preco*100):0}% do preço de venda)</span></div>${sem?'<p class="mut">Algum material ainda não tem compra registrada, então o custo dele está zerado.</p>':''}`;
-$('#resn').innerHTML=`<div class="ln"><span>Custo de ${qn} un.</span><span>${brl(c.custo*qn)}</span></div><div class="ln"><b>Total a cobrar (${qn} un.)</b><b>${brl(c.preco*qn)}</b></div><div class="ln"><span>Lucro</span><span>${brl(c.lucro*qn)}</span></div>`}
+el.innerHTML=L('Materiais',c.mat)+L(`Tinta (${fmt(ed.tinta)}% das folhas)`,c.tinta)+L('Mão de obra',c.mdo)+B('Custo por unidade',c.custo)+B('Preço por unidade',c.preco)+L('Lucro por unidade',c.lucro)+(sem?'<p class="mut">Algum material ainda não tem compra registrada, então o custo dele está zerado.</p>':'');
+$('#resn').innerHTML=L(`Custo de ${qn} un.`,c.custo*qn)+L('Lucro',c.lucro*qn);
+$('#resb').innerHTML=`Total a cobrar (${qn} un.)<b>${brl(c.preco*qn)}</b><span>Lucro ${brl(c.lucro*qn)}</span>`}
 
-function vPerda(){const tot=S.perdas.reduce((a,p)=>a+p.valor,0),por={},pi={};
+function vPerda(){const tot=S.perdas.reduce((a,p)=>a+p.valor,0),por={},pi={},e=ep&&S.perdas.find(x=>x.id==ep),nm=id=>item(id)?.nome||'Item excluído',un=id=>item(id)?.un||'';
 S.perdas.forEach(p=>{(por[p.motivo]??=0);por[p.motivo]+=p.valor;(pi[p.item]??={q:0,v:0});pi[p.item].q+=p.qtd;pi[p.item].v+=p.valor});
-return `<section class="card"><h2>Registrar perda</h2>${S.itens.length?`<label>Item<select id="p_item">${itemOpts(pre)}</select></label>
-<div class="two"><label>Quantidade perdida<input id="p_q" inputmode="decimal"></label><label>Motivo<select id="p_m">${MOT.map(m=>`<option>${m}</option>`).join('')}</select></label></div>
-<label>Justificativa (obrigatória em "Outros")<textarea id="p_j"></textarea></label><button class="full" data-a="perda">Baixar do estoque</button>`:'<p class="mut">Cadastre itens na aba Estoque primeiro.</p>'}</section>
+return `<section class="card"><h2>${e?'Editar perda':'Registrar perda'}</h2>${S.itens.length?`<label>Item<select id="p_item">${itemOpts(e?e.item:pre)}</select></label>
+<div class="two"><label>Quantidade perdida<input id="p_q" inputmode="decimal" value="${e?inp(e.qtd):''}"></label><label>Motivo<select id="p_m">${MOT.map(m=>`<option${e&&e.motivo==m?' selected':''}>${m}</option>`).join('')}</select></label></div>
+<label>Justificativa (obrigatória em "Outros")<textarea id="p_j">${e?esc(e.just):''}</textarea></label><button class="full" data-a="perda">${e?'Salvar alterações':'Baixar do estoque'}</button>${e?'<button class="ghost full" data-a="cancP" style="margin-top:8px">Cancelar</button>':''}`:'<p class="mut">Cadastre itens na aba Estoque primeiro.</p>'}</section>
 <section class="card"><h2>Relatório de perdas</h2><div class="big">Total perdido<b>${brl(tot)}</b></div>
-${Object.keys(pi).length?`<p class="mut" style="margin-bottom:4px">Por item</p>${Object.entries(pi).map(([id,x])=>`<div class="ln"><span>${esc(item(id)?.nome)}: ${fmt(x.q)} ${item(id)?.un}</span><span>${brl(x.v)}</span></div>`).join('')}
+${Object.keys(pi).length?`<p class="mut" style="margin-bottom:4px">Por item</p>${Object.entries(pi).map(([id,x])=>`<div class="ln"><span>${esc(nm(id))}: ${fmt(x.q)} ${un(id)}</span><span>${brl(x.v)}</span></div>`).join('')}
 <p class="mut" style="margin:12px 0 4px">Por motivo</p>${Object.entries(por).map(([m,v])=>`<div class="ln"><span>${m}</span><span>${brl(v)}</span></div>`).join('')}
-<p class="mut" style="margin:12px 0 0">Últimas perdas</p>${S.perdas.slice(-15).reverse().map(p=>`<div class="row"><div>${esc(item(p.item)?.nome)} · ${fmt(p.qtd)} ${item(p.item)?.un}<small>${new Date(p.data).toLocaleDateString('pt-BR')} · ${p.motivo}${p.just?': '+esc(p.just):''}</small></div><b>${brl(p.valor)}</b></div>`).join('')}`:'<p class="mut">Nenhuma perda registrada.</p>'}</section>`}
+<p class="mut" style="margin:12px 0 0">Últimas perdas</p>${S.perdas.slice(-15).reverse().map(p=>`<div class="itm"><div class="top" style="justify-content:space-between"><div>${esc(nm(p.item))} · ${fmt(p.qtd)} ${un(p.item)}<small>${new Date(p.data).toLocaleDateString('pt-BR')} · ${p.motivo}${p.just?': '+esc(p.just):''}</small></div><b>${brl(p.valor)}</b></div><div class="acts"><button class="ghost" data-a="editP" data-id="${p.id}">Editar</button><button class="del" data-a="excluirP" data-id="${p.id}">Excluir</button></div></div>`).join('')}`:'<p class="mut">Nenhuma perda registrada.</p>'}</section>`}
+
+function vOrc(){const L=cestaL(),pr=p=>Math.round(calc(p).preco*100)/100;
+return `<section class="card"><h2>Dados do orçamento</h2><label>Nome do cliente<input data-o="cliente" value="${esc(S.cesta.cliente)}" placeholder="Ex.: Maria Silva"></label>
+<label>Data do orçamento<input data-o="data" inputmode="numeric" value="${esc(odata)}" placeholder="DD/MM/AAAA"></label></section>
+<section class="card"><h2>Adicionar produto</h2>${S.prods.length?`<div class="mat2"><label>Produto<select id="o_prod">${S.prods.map(p=>`<option value="${p.id}">${esc(p.nome)} · ${brl(pr(p))}</option>`).join('')}</select></label><label>Qtd.<input id="o_q" inputmode="numeric" value="1"></label></div>
+<button class="ghost full" data-a="addCesta">+ Adicionar à cesta</button>`:'<p class="mut">Cadastre produtos na aba Produtos primeiro.</p>'}</section>
+<section class="card"><h2>Cesta do cliente</h2>${L.length?L.map(x=>`<div class="itm"><div class="top">${thumb(x.p.foto,'🎨')}<div style="flex:1;min-width:0"><b>${esc(x.p.nome)}</b><small>${brl(x.u)} cada</small></div><button class="del" data-a="rmCesta" data-id="${x.id}">✕</button></div>
+<div class="qrow"><label>Qtd.<input data-o="q" data-id="${x.id}" inputmode="numeric" value="${x.q}"></label><b id="sub_${x.id}">${brl(x.sub)}</b></div></div>`).join('')+`<div class="big">Total geral<b id="otot">${brl(cTotal())}</b></div>
+<button class="sec full" data-a="pdf">Gerar PDF do orçamento</button><button class="ghost full" data-a="limpaCesta" style="margin-top:8px">Limpar cesta</button>`:'<p class="mut">A cesta está vazia. Escolha um produto acima.</p>'}</section>`}
 
 function vAj(){const c=(k,l)=>`<label>${l}<input data-c="${k}" inputmode="decimal" value="${inp(S.cfg[k])}"></label>`;
 return `<section class="card"><h2>Valores padrão</h2><p class="mut">Valem para produtos novos. Em cada produto você pode mudar.</p>${c('hora','Valor da hora de trabalho (R$)')}${c('tinta','Tinta (% do valor das folhas)')}${c('margem','Margem de lucro (% sobre o custo)')}</section>
 <section class="card"><h2>Backup</h2><p class="mut">Os dados ficam só neste aparelho. Exporte um backup de vez em quando e guarde o arquivo.</p>
 <button class="full" data-a="exp">Exportar backup</button><label style="margin-top:10px"><span class="ghost" style="display:block;text-align:center;padding:11px;border-radius:10px;font-weight:600;color:var(--roxo-d);background:var(--lilas-c)">Importar backup</span><input type="file" id="imp" accept=".json,application/json" hidden></label></section>`}
 
-function render(){$('#v').innerHTML=({estoque:vEstoque,prod:vProd,perda:vPerda,aj:vAj})[tab]();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));if(tab=='prod'&&ed)calcRes();window.scrollTo(0,0)}
+function render(keep){$('#v').innerHTML=({estoque:vEstoque,prod:vProd,perda:vPerda,orc:vOrc,aj:vAj})[tab]();document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));if(tab=='prod'&&ed)calcRes();if(!keep)window.scrollTo(0,0)}
 
 /* ações */
 const A={
 entrada(){let id=$('#e_item').value;const q=num($('#e_q').value),v=num($('#e_v').value);
 if(q<=0||v<=0)return toast('Informe a quantidade e o valor pago');
-if(id=='new'){const nome=$('#e_nome').value.trim();if(!nome)return toast('Digite o nome do item');id=uid();S.itens.push({id,nome,un:$('#e_un').value,folha:$('#e_folha').checked})}
-S.lotes.push({id:uid(),item:id,qtd:q,rest:q,total:v,data:Date.now()});save();render();toast('Entrada registrada')},
+if(id=='new'){const nome=$('#e_nome').value.trim();if(!nome)return toast('Digite o nome do item');id=uid();S.itens.push({id,nome,un:$('#e_un').value,folha:$('#e_folha').checked,foto:nf})}
+S.lotes.push({id:uid(),item:id,qtd:q,rest:q,total:v,data:Date.now()});nf='';save();render();toast('Entrada registrada')},
 perdaDe(b){pre=b.dataset.id;tab='perda';render()},
-perda(){const id=$('#p_item').value,q=num($('#p_q').value),m=$('#p_m').value,j=$('#p_j').value.trim();
-if(q<=0)return toast('Informe a quantidade perdida');if(q>estoque(id)+1e-9)return toast('Só há '+fmt(estoque(id))+' em estoque');
+perda(){const id=$('#p_item').value,q=num($('#p_q').value),m=$('#p_m').value,j=$('#p_j').value.trim(),o=ep&&S.perdas.find(x=>x.id==ep);
+if(q<=0)return toast('Informe a quantidade perdida');
+const disp=estoque(id)+(o&&o.item==id?o.qtd:0);if(q>disp+1e-9)return toast('Só há '+fmt(disp)+' em estoque');
 if(m=='Outros'&&!j)return toast('Explique o motivo em "Outros"');
-const valor=baixa(id,q);S.perdas.push({id:uid(),item:id,qtd:q,motivo:m,just:j,valor,data:Date.now()});save();pre=null;render();toast('Perda registrada')},
+if(o){devolve(o);const lt=[],valor=baixa(id,q,lt);Object.assign(o,{item:id,qtd:q,motivo:m,just:j,valor,lt});toast('Perda atualizada')}
+else{const lt=[],valor=baixa(id,q,lt);S.perdas.push({id:uid(),item:id,qtd:q,motivo:m,just:j,valor,lt,data:Date.now()});toast('Perda registrada')}
+ep=null;pre=null;save();render()},
+editP(b){const o=S.perdas.find(x=>x.id==b.dataset.id);if(!o)return;if(!item(o.item))return toast('Este item foi excluído, então a perda não pode ser editada');ep=o.id;render()},
+cancP(){ep=null;render()},
+excluirP(b){const o=S.perdas.find(x=>x.id==b.dataset.id);if(!o||!confirm('Excluir esta perda? A quantidade volta para o estoque.'))return;devolve(o);S.perdas=S.perdas.filter(x=>x!==o);if(ep==o.id)ep=null;save();render(true);toast('Perda excluída')},
+editI(b){ei=JSON.parse(JSON.stringify(item(b.dataset.id)));render()},
+cancI(){ei=null;render()},
+rmFotoI(){ei.foto='';render(true)},
+salvarI(){if(!ei.nome.trim())return toast('Digite o nome do item');Object.assign(item(ei.id),{nome:ei.nome.trim(),un:ei.un,folha:!!ei.folha,foto:ei.foto||''});save();ei=null;render();toast('Item atualizado')},
+excluirI(b){const id=b.dataset.id,i=item(id);if(!i)return;const n=S.prods.filter(p=>p.mats.some(m=>m.item==id)).length;
+if(!confirm('Excluir "'+i.nome+'" e todos os lotes dele do estoque?'+(n?'\n\nEle também será removido dos materiais de '+n+' produto(s), e o preço deles vai mudar.':'')))return;
+S.itens=S.itens.filter(x=>x.id!=id);S.lotes=S.lotes.filter(l=>l.item!=id);S.prods.forEach(p=>p.mats=p.mats.filter(m=>m.item!=id));if(pre==id)pre=null;save();render(true);toast('Item excluído')},
+addCesta(){const id=$('#o_prod').value,q=Math.floor(num($('#o_q').value));if(q<1)return toast('Informe a quantidade');const c=S.cesta.itens.find(x=>x.id==id);c?c.q+=q:S.cesta.itens.push({id,q});save();render(true);toast('Adicionado à cesta')},
+rmCesta(b){S.cesta.itens=S.cesta.itens.filter(x=>x.id!=b.dataset.id);save();render(true)},
+limpaCesta(){if(confirm('Remover todos os produtos da cesta?')){S.cesta.itens=[];save();render(true)}},
+pdf(){const L=cestaL().filter(x=>x.q>0);if(!L.length)return toast('A cesta está vazia');
+let cli=(S.cesta.cliente||'').trim();if(!cli){cli=(prompt('Qual o nome do cliente?')||'').trim();if(!cli)return toast('Informe o nome do cliente');S.cesta.cliente=cli;save();const el=document.querySelector('[data-o=cliente]');if(el)el.value=cli}
+const dt=(odata||'').trim()||hoje(),tot=L.reduce((a,x)=>a+x.sub,0);
+$('#doc').innerHTML=`<div id="bar"><button class="ghost" data-d="fechar">← Fechar</button><button data-d="print">Imprimir / Salvar PDF</button></div>
+<div class="pg"><div class="dh"><img src="icon-192.png" alt=""><div><div class="dt"><span class="sc">Colorir</span><span class="mm">MOMENTOS</span></div><div class="dsub">Cada detalhe é feito para colorir seus momentos</div></div></div>
+<div class="faixa"></div><h1>ORÇAMENTO</h1>
+<table><thead><tr><th>Foto</th><th>Produto</th><th>Qtd.</th><th>Valor unit.</th><th>Subtotal</th></tr></thead><tbody>${L.map(x=>`<tr><td style="width:84px">${x.p.foto?`<img class="pf" src="${x.p.foto}" alt="">`:'<div class="pf">🎨</div>'}</td><td>${esc(x.p.nome)}</td><td>${x.q}</td><td>${brl(x.u)}</td><td>${brl(x.sub)}</td></tr>`).join('')}</tbody></table>
+<div class="ptot">Total: ${brl(tot)}</div>
+<div class="obg">Obrigada por escolher a Colorir Momentos! 💕</div>
+<div class="bot"><div class="cl">Cliente: ${esc(cli)}</div><div class="dtx">Data: ${esc(dt)}</div></div></div>`;
+$('#doc').classList.add('on');$('#doc').scrollTop=0;setTimeout(printDoc,500)},
 novo(){ed={nome:'',foto:'',tempo:0,hora:S.cfg.hora,tinta:S.cfg.tinta,margem:S.cfg.margem,mats:[]};qn=1;render()},
 abrir(b){ed=JSON.parse(JSON.stringify(S.prods.find(p=>p.id==b.dataset.id)));qn=1;render()},
 voltar(){ed=null;render()},
-addMat(){ed.mats.push({item:S.itens[0].id,qtd:1});render()},
+addMat(){if(!S.itens.length)return toast('Cadastre itens na aba Estoque antes');ed.mats.push({item:S.itens[0].id,qtd:1});render()},
 rmMat(b){ed.mats.splice(+b.dataset.i,1);render()},
 qn(b){qn=+b.dataset.n;$('#n').value=qn;calcRes()},
 salvar(){if(!ed.nome.trim())return toast('Dê um nome ao produto');ed.mats=ed.mats.filter(m=>m.qtd>0);
 if(ed.id){S.prods[S.prods.findIndex(p=>p.id==ed.id)]=ed}else{ed.id=uid();S.prods.push(ed)}save();ed=null;render();toast('Produto salvo')},
-excluir(){if(confirm('Excluir este produto?')){S.prods=S.prods.filter(p=>p.id!=ed.id);save();ed=null;render()}},
+excluir(){if(confirm('Excluir este produto?')){S.prods=S.prods.filter(p=>p.id!=ed.id);S.cesta.itens=S.cesta.itens.filter(c=>c.id!=ed.id);save();ed=null;render()}},
 produzir(){const need={};ed.mats.forEach(m=>need[m.item]=(need[m.item]||0)+m.qtd*qn);
 const falta=Object.keys(need).filter(id=>need[id]>estoque(id)+1e-9);
 if(!Object.keys(need).length)return toast('Adicione os materiais primeiro');
@@ -169,20 +267,29 @@ if(falta.length)return alert('Estoque insuficiente para '+qn+' unidade(s):\n'+fa
 if(!confirm('Registrar a produção de '+qn+' unidade(s) e baixar o estoque?'))return;
 const c=calc(ed);Object.keys(need).forEach(id=>baixa(id,need[id]));
 S.prod.push({id:uid(),prodId:ed.id||null,nome:ed.nome,n:qn,custo:c.custo*qn,data:Date.now()});save();render();toast('Produção registrada e estoque atualizado')},
-exp(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='colorir-momentos-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click()}
+exp(){const b=new Blob([JSON.stringify(S)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='colorir-momentos-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Backup exportado')}
 };
+function printDoc(){const t=document.title;document.title='Orcamento - '+(S.cesta.cliente||'cliente');window.onafterprint=()=>{document.title=t};try{window.print()}catch(_){document.title=t}}
+$('#doc').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(!b)return;if(b.dataset.d=='fechar')$('#doc').classList.remove('on');else printDoc()});
 $('#v').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)A[b.dataset.a](b)});
 $('#v').addEventListener('input',e=>{const t=e.target;
 if(t.dataset.f&&ed){ed[t.dataset.f]=t.dataset.f=='nome'?t.value:num(t.value);calcRes()}
 else if(t.dataset.k&&ed){ed.mats[+t.dataset.i][t.dataset.k]=t.dataset.k=='qtd'?num(t.value):t.value;calcRes()}
-else if(t.id=='n'&&ed){qn=Math.max(1,Math.floor(num(t.value)));calcRes()}});
+else if(t.id=='n'&&ed){qn=Math.max(1,Math.floor(num(t.value)));calcRes()}
+else if(t.dataset.g=='nome'&&ei)ei.nome=t.value;
+else if(t.dataset.o){const k=t.dataset.o;if(k=='cliente')S.cesta.cliente=t.value;else if(k=='data')odata=t.value;
+else if(k=='q'){const c=S.cesta.itens.find(x=>x.id==t.dataset.id);if(c){c.q=Math.max(0,Math.floor(num(t.value)));const x=cestaL().find(x=>x.id==c.id),a=document.getElementById('sub_'+c.id);if(a)a.textContent=brl(x?x.sub:0);const o=document.getElementById('otot');if(o)o.textContent=brl(cTotal())}}}});
 $('#v').addEventListener('change',e=>{const t=e.target;
 if(t.id=='e_item')$('#e_new').hidden=t.value!='new';
 if(t.dataset.c){S.cfg[t.dataset.c]=num(t.value);save();toast('Valor padrão salvo')}
-if(t.id=='foto'&&t.files[0]){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);ed.foto=c.toDataURL('image/jpeg',.75);render()};im.src=r.result};r.readAsDataURL(t.files[0])}
-if(t.id=='imp'&&t.files[0]){t.files[0].text().then(x=>{try{const d=JSON.parse(x);if(!d.itens||!d.lotes)throw 0;if(confirm('Substituir os dados deste aparelho pelo backup?')){S=Object.assign({cfg:S.cfg,itens:[],lotes:[],prods:[],perdas:[],prod:[]},d);save();render();toast('Backup importado')}}catch(_){toast('Arquivo de backup inválido')}})}});
-document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;ed=null;render()}});
-(async()=>{const d=await load().catch(()=>0);if(d)S=Object.assign(S,d);navigator.storage?.persist?.();render();if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{})})();
+if(t.dataset.g&&ei){if(t.dataset.g=='folha')ei.folha=t.checked;else if(t.dataset.g=='un')ei.un=t.value}
+if(t.dataset.o){if(t.dataset.o=='q'){const c=S.cesta.itens.find(x=>x.id==t.dataset.id);if(c&&c.q<1){S.cesta.itens=S.cesta.itens.filter(x=>x!==c);render(true)}}save()}
+if(t.id=='foto'&&t.files[0])resize(t.files[0],d=>{ed.foto=d;render(true)});
+if(t.id=='ifoto'&&t.files[0])resize(t.files[0],d=>{ei.foto=d;render(true)});
+if(t.id=='nfoto'&&t.files[0])resize(t.files[0],d=>{nf=d;$('#nprev').innerHTML=thumb(d,'📦')});
+if(t.id=='imp'&&t.files[0]){t.files[0].text().then(x=>{try{const d=JSON.parse(x);if(!d.itens||!d.lotes)throw 0;if(confirm('Substituir os dados deste aparelho pelo backup?')){S=Object.assign({cfg:S.cfg,itens:[],lotes:[],prods:[],perdas:[],prod:[],cesta:{itens:[],cliente:''}},d);save();render();toast('Backup importado')}}catch(_){toast('Arquivo de backup inválido')}})}});
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;ed=ei=ep=null;nf='';render()}});
+(async()=>{const d=await load().catch(()=>0);if(d)S=Object.assign(S,d);S.cesta=S.cesta||{itens:[],cliente:''};navigator.storage?.persist?.();render();if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{})})();
 </script>
 </body>
 </html>
